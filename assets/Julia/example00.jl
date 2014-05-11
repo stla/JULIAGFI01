@@ -1,5 +1,16 @@
 
-#include("D:/Github/JuliaGFI01/assets/Julia/functions00.jl")
+# set current directory
+cd("D:/Github/JuliaGFI01/assets/Julia/")
+
+# include types
+file = "Line"
+    include(*(pwd(), "\\type_", file, ".jl"))
+
+# include functions
+for file = ("newLine", "intersect", "findRange", "getLine", "orderPart", "plotPart")
+    include(*(pwd(), "\\function_", file, ".jl"))
+end
+
 
 # first ribbon: (ne pas lancer le comment en 1ère ligne)
 D1_low = newLine(0.4, BigFloat("1.5"), false);
@@ -54,7 +65,6 @@ for D = (D3_low, D3_upp)
     if length(Dinters) == 2
         for i = (1,2) # we calculate the two vertices on D
             inter = intersect((D.a,D.b), getLine(opoly,Dinters[i]))
-
         end # endfor i=1,2
         toAdd = true
     end # endif length(Dinters) == 2

@@ -1,4 +1,4 @@
-# converts a segment to (intercept, slope)
+# converts an edge to (intercept, slope)
 function getLine(opoly::Array{BigFloat,2}, index::Int)
         A = opoly[:,index]
         B = opoly[:,mod(index+1,size(poly,2))]
