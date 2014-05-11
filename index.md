@@ -315,6 +315,7 @@ draw(D3("part01.js", 630px, 340px), p)
 
 *** {name: right, width: "64%"}
 
+
 <!-- Placed whereever you want the graphic to be rendered. -->
 <iframe src="assets/img/part01.html" style="border: none; "></iframe>
 
@@ -491,7 +492,21 @@ end
 </code></pre>
 
 
-<iframe srcdoc='
+<style type="text/css">
+#frame {  
+    width: 420px;
+    height: 310px;
+}
+#frame {  
+    -ms-zoom: 1.1;
+    -moz-transform: scale(1.1);
+    -o-transform: scale(1.1);
+    -webkit-transform: scale(1.1);
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+}
+</style> 
+<iframe id="frame" style="border: none;" srcdoc='
 <head>
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="./assets/js/gadfly.js"></script>
@@ -505,11 +520,8 @@ end
 <script>
 draw("#gadfly_part02");
 </script>
-<script>
-
-</script>
 </body>
-' src="demo_iframe_srcdoc.htm">
+' src="xxx.htm">
   <p>Your browser does not support iframes.</p>
 </iframe>
 

@@ -358,6 +358,7 @@ draw(D3("part01.js", 630px, 340px), p)', size="66%")
 
 *** {name: right, width: "64%"}
 
+
 <!-- Placed whereever you want the graphic to be rendered. -->
 <iframe src="assets/img/part01.html" style="border: none; "></iframe>
 
@@ -617,7 +618,7 @@ codechunk(file="function_getLine.jl", size="68%")
 ```
 
 ```{r gadfly_part02, results='asis', echo=FALSE, cache=FALSE}
-includeGadfly("part02") 
+includeGadfly("part02", width="420px", height="310px", scale=1.1) 
 ```
 
 

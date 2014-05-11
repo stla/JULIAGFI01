@@ -16,7 +16,7 @@ codechunk <- function(code, file=NULL, size="100%", dirfile="assets/Julia"){
 }
 
 # marche pas comme voulu, faire un scale iframe
-includeGadfly <- function(file, dirfile="assets/Julia", width=NULL, height=NULL){ # width in mm
+includeGadfly0 <- function(file, dirfile="assets/Julia", width=NULL, height=NULL){ # width in mm
   id <- paste0("gadfly_",file)
   file <- paste0(file, ".js")
   if(!is.null(width)){
@@ -52,15 +52,52 @@ draw("#%s");
   cat(html)
 }
 
-# d3.select("#%s").find("svg")[0].attr({
-#   "width": "100px",
-#   "height": "100px"
-# })
 
-# var svg = d3.select("#%s").find("svg")[0];
-# svg.removeAttribute("width");
-# svg.removeAttribute("height");
-# svg.setAttribute("width", "20mm")
+includeGadfly <- function(file, dirfile="assets/Julia", width=NULL, height=NULL, scale=1){ # width = "10px"
+  id <- paste0("gadfly_",file)
+  file <- paste0(file, ".js")
+  if(!is.null(width)){
+    if(is.null(height)) height <- width
+      css <- sprintf('<style type="text/css">
+#frame {  
+    width: %s;
+    height: %s;
+}
+#frame {  
+    -ms-zoom: %s;
+    -moz-transform: scale(%s);
+    -o-transform: scale(%s);
+    -webkit-transform: scale(%s);
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+}
+</style>', width, height, scale,scale,scale,scale)
+  }else{
+    css <- ""
+  }
+  
+html <- '<iframe id="frame" style="border: none;" srcdoc=\'
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="./assets/js/gadfly.js"></script>
+
+</head>
+<body>
+<div id="%s"></div>
+<script src="./assets/Julia/%s"></script>
+<script>
+</script>
+<script>
+draw("#%s");
+</script>
+</body>
+\' src="xxx.htm">
+  <p>Your browser does not support iframes.</p>
+</iframe>'
+  html <- sprintf(html, id, file, id)
+  cat(css, "\n")
+  cat(html)
+}
 
 helpPopup <- function(title, content,
                       placement=c('right', 'top', 'left', 'bottom'),
