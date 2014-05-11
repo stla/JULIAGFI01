@@ -613,7 +613,11 @@ We  use the following function to get the $i$-th edge of the ordered
 particle:
 
 ```{r macro_getline, results='asis', echo=FALSE}
-codechunk(file="function_getLine.jl", size="63%")
+codechunk(file="function_getLine.jl", size="68%")
+```
+
+```{r gadfly_part02, results='asis', echo=FALSE, cache=FALSE}
+includeGadfly("part02") 
 ```
 
 
@@ -642,5 +646,5 @@ codechunk('for D = (D3_low, D3_upp)
         opoly = hcat(opoly,inter)
     end
 end # endfor D = (D3_low, D3_upp)
-poly = opoly', size="63%")
+poly = opoly', size="68%")
 ```

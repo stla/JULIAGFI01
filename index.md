@@ -372,7 +372,7 @@ $$
 <pre><code class="r" style="font-size:71%"># find the range
 function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
         slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
-        return [minimum(slopes);maximum(slopes)]
+        return [ minimum(slopes) ; maximum(slopes) ]
 end
 </code></pre>
 
@@ -480,7 +480,7 @@ Thus:
 We  use the following function to get the $i$-th edge of the ordered 
 particle:
 
-<pre><code class="r" style="font-size:63%"># converts a segment to (intercept, slope)
+<pre><code class="r" style="font-size:68%"># converts an edge to (intercept, slope)
 function getLine(opoly::Array{BigFloat,2}, index::Int)
         A = opoly[:,index]
         B = opoly[:,mod(index+1,size(poly,2))]
@@ -491,10 +491,33 @@ end
 </code></pre>
 
 
+<iframe srcdoc='
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="./assets/js/gadfly.js"></script>
+
+</head>
+<body>
+<div id="gadfly_part02"></div>
+<script src="./assets/Julia/part02.js"></script>
+<script>
+</script>
+<script>
+draw("#gadfly_part02");
+</script>
+<script>
+
+</script>
+</body>
+' src="demo_iframe_srcdoc.htm">
+  <p>Your browser does not support iframes.</p>
+</iframe>
+
+
 
 *** {name: right, width: "49%"}
 
-<pre><code class="r" style="font-size:63%">for D = (D3_low, D3_upp)
+<pre><code class="r" style="font-size:68%">for D = (D3_low, D3_upp)
     test1 = y1 .> D.a .+ D.b .* x1
     test2 = y2 .> D.a .+ D.b .* x2
     test = test1 + test2
