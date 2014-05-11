@@ -15,6 +15,7 @@ codechunk <- function(code, file=NULL, size="100%", dirfile="assets/Julia"){
   cat(html)
 }
 
+
 # marche pas comme voulu, faire un scale iframe
 includeGadfly0 <- function(file, dirfile="assets/Julia", width=NULL, height=NULL){ # width in mm
   id <- paste0("gadfly_",file)
@@ -22,8 +23,8 @@ includeGadfly0 <- function(file, dirfile="assets/Julia", width=NULL, height=NULL
   if(!is.null(width)){
     if(is.null(height)) height <- width
     viewbox <- paste("0 0", width, height)
-    newattr <- sprintf('d3.select("#%s svg").attr("width", "%s").attr("height", "%s").attr("viewBox", "%s")', 
-            id, paste0(width,"mm"),  paste0(height,"mm"), viewbox)
+    newattr <- sprintf('d3.select("#%s svg").attr("viewBox", "%s").attr("preserveAspectRatio", "xMidYMid meet")', 
+            id, viewbox)
   }else{
     newattr <- ""
   }
@@ -52,7 +53,41 @@ draw("#%s");
   cat(html)
 }
 
+includeGadfly1 <- function(file, dirfile="assets/Julia", scale=NULL, height){ # width in mm
+  id <- paste0("gadfly_",file)
+  if(!is.null(scale)){
+    html <- 'var width = parseFloat(d3.select("#%s svg").attr("width"))
+    var height = parseFloat(d3.select("#%s svg").attr("height"))
+    d3.select("#%s svg").attr("width", width*%s +"mm").attr("height", height*%s +"mm");'
+    newattr <- sprintf(html, id, id, id, scale, scale)
+  }else{
+    newattr <- ""
+  }
+  html <- '<!DOCTYPE html>
+<html>
+<head>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="../js/gadfly.js"></script>
+  
+</head>
+<body>
+  <div id="%s"></div>
+  <script src="../Julia/%s"></script>
+  <script>
+    draw("#%s");
+  </script>
+  <script>
+    %s
+  </script>
+</body>
+</html>'
+  html <- sprintf(html, id, paste0(file, ".js"), id, newattr)
+  htmlFile <-  paste0(file, ".html")
+  cat(html, file=file.path(".", "assets", "img", htmlFile))
+  cat(sprintf('<iframe src="assets/img/%s" style="border: none; height:%s"></iframe>', htmlFile, height))
+}
 
+# ça déconne avec srcdoc, utiliser un vrai iframe
 includeGadfly <- function(file, dirfile="assets/Julia", width=NULL, height=NULL, scale=1){ # width = "10px"
   id <- paste0("gadfly_",file)
   file <- paste0(file, ".js")
@@ -76,7 +111,7 @@ includeGadfly <- function(file, dirfile="assets/Julia", width=NULL, height=NULL,
     css <- ""
   }
   
-html <- '<iframe id="frame" style="border: none;" srcdoc=\'
+html <- '<iframe id="frame" style="border: none;"  srcdoc=\'
 <head>
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="./assets/js/gadfly.js"></script>

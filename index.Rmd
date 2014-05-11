@@ -617,8 +617,10 @@ particle:
 codechunk(file="function_getLine.jl", size="68%")
 ```
 
+
+
 ```{r gadfly_part02, results='asis', echo=FALSE, cache=FALSE}
-includeGadfly("part02", width="420px", height="310px", scale=1.1) 
+includeGadfly1("part02", scale=1.1, height="230px") 
 ```
 
 

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="../js/gadfly.js"></script>
+  
+</head>
+<body>
+  <div id="gadfly_part02"></div>
+  <script src="../Julia/part02.js"></script>
+  <script>
+    draw("#gadfly_part02");
+  </script>
+  <script>
+    var width = parseFloat(d3.select("#gadfly_part02 svg").attr("width"))
+    var height = parseFloat(d3.select("#gadfly_part02 svg").attr("height"))
+    d3.select("#gadfly_part02 svg").attr("width", width*1.1 +"mm").attr("height", height*1.1 +"mm");
+  </script>
+</body>
+</html>
