@@ -8,17 +8,19 @@ for file = ("Line",)
 end
 
 # include functions
-for file = ("newLine", "intersect", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
+for file = ("DlowDupp", "intersect", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
     include(*(pwd(), "\\function_", file, ".jl"))
 end
 
 
 # first ribbon: (ne pas lancer le comment en 1ère ligne)
-D1_low = newLine(0.4, BigFloat("1.5"), false);
-D1_upp = newLine(1.5, BigFloat("1.5"), true);
+R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
+D1_low = Dlow(R1);
+D1_upp = Dupp(R1);
 # second ribbon:
-D2_low = newLine(4.5, BigFloat("-2"), false);
-D2_upp = newLine(5.9, BigFloat("-2"), true);
+R2 = Ribbon(4.5, 5.9, BigFloat("-2"));
+D2_low = Dlow(R2);
+D2_upp = Dupp(R2);
 
 # find the intersections:
 A = intersect((D1_low.a, D1_low.b), (D2_low.a, D2_low.b));
