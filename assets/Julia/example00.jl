@@ -3,11 +3,12 @@
 cd("D:/Github/JuliaGFI01/assets/Julia/")
 
 # include types
-file = "Line"
+for file = ("Line",)
     include(*(pwd(), "\\type_", file, ".jl"))
+end
 
 # include functions
-for file = ("newLine", "intersect", "findRange", "getLine", "orderPart", "plotPart")
+for file = ("newLine", "intersect", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
     include(*(pwd(), "\\function_", file, ".jl"))
 end
 
@@ -26,51 +27,51 @@ C = intersect((D1_upp.a, D1_upp.b), (D2_low.a, D2_low.b));
 D = intersect((D1_upp.a, D1_upp.b), (D2_upp.a, D2_upp.b));
 
 # particle:
-poly = hcat(A,B,C,D)
+poly0 = poly = orderPart(hcat(A,B,C,D))
 
 #######################
 ## plot the particle ##
 #######################
 #p = plotPart(poly)
 #draw(PNG("part0x1.png", 300px, 200px), p)
-#draw(D3("part01.js", 650px, 350px), p)
+#draw(D3("part01.js", 630px, 340px), p)
 
 
 # new ribbon
 a_low = 2.;
 a_upp = 3.;
 println("range:", float64(findRange(poly, a_low, a_upp)))
-D3_low = newLine(a_low, BigFloat("0.5"), false);
-D3_upp = newLine(a_upp, BigFloat("0.5"), true);
 
- #
+R3 = Ribbon(a_low, a_upp, BigFloat("0.5"))
 
-opoly = orderPart(poly)
-x1 = vec(opoly[1,:])
-y1 = vec(opoly[2,:])
-x2 = x1[[2:length(x1); 1]]
-y2 = y1[[2:length(x1); 1]]
+float64(poly)
+float64(updatePoly(poly, Dlow(R3)))
 
-for D = (D3_low, D3_upp)
-    test1 = y1 .> D.a .+ D.b .* x1
-    test2 = y2 .> D.a .+ D.b .* x2
-    test = test1 + test2
-    if(D.typ==false)
-        toRemove = test .== 0
-    else
-        toRemove = test .== 2
-    end
-    Dinters = find(test.== 1) # should be 0 or 2 elements
-    toAdd = false
-    if length(Dinters) == 2
-        for i = (1,2) # we calculate the two vertices on D
-            inter = intersect((D.a,D.b), getLine(opoly,Dinters[i]))
-        end # endfor i=1,2
-        toAdd = true
-    end # endif length(Dinters) == 2
-    opoly = opoly[:,!toRemove]
-    if toAdd
-        opoly = hcat(opoly,inter)
-    end
-end # endfor D = (D3_low, D3_upp)
-poly = opoly
+R4 = Ribbon(a_low, a_upp, BigFloat("0.2"));
+float64(updatePoly(poly, Dlow(R4)))
+float64(updatePoly(poly, Dupp(R4)))
+
+
+
+
+# rq : sortir un poly ordonné serait mieux
+#float64(updatePoly(poly, D3_low, D3_upp))
+
+float64(poly0)
+poly=poly0
+for (a_low, a_upp) = ((2.,3.), )# (3.2,3.9))
+    mM = findRange(poly, a_low, a_upp)
+    println("range:", float64(mM))
+    b = mM[1] +(mM[2]-mM[1])*rand()
+    println(float64(b));
+    R3 = Ribbon(a_low, a_upp, b)
+    poly = poly1 = updatePoly(poly, Dlow(R3))
+    poly = poly2 = updatePoly(poly, Dupp(R3))
+end
+
+float64(poly0)
+float64(poly)
+
+
+#draw(PNG("part02.png", 630px, 340px), p)
+#draw(D3("part02.js", 300px, 190px), p)
