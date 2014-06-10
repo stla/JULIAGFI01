@@ -64,10 +64,12 @@ function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Li
             end
             toRemove = find(Remove)
             if length(toRemove) == 1
+                    println("case 1\n")
                     return updatePoly1(opoly, D, toRemove[1])
             elseif length(toRemove) == 0
                     Dinters=find(test.== 1)
                     if length(Dinters) == 2
+                        println("case 2\n")
                         return updatePoly2(opoly, D, Dinters, test2)
                     else
                         return opoly
@@ -79,9 +81,10 @@ function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Li
                         indices = [indices, torem]
                     else
                         indices = [1:size(opoly)[2]]
-                        splice!(indices, toRemove[2]:length(toRemove))
+                        splice!(indices, toRemove[2]:toRemove[length(toRemove)])
                         torem = toRemove[1]
                     end
+                    println("case 3\n")
                     updatePoly1(opoly[:,indices], D, torem)
             end
 
