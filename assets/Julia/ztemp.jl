@@ -1,17 +1,4 @@
-using Distributions
 
-# set current directory
-cd("D:/Github/JuliaGFI01/assets/Julia/")
-
-# include types
-for file = ("Line",)
-    include(*(pwd(), "\\type_", file, ".jl"))
-end
-
-# include functions
-for file = ("DlowDupp", "intersect", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
-    include(*(pwd(), "\\function_", file, ".jl"))
-end
 
 
 # first ribbon: (ne pas lancer le comment en 1ère ligne)
@@ -54,3 +41,8 @@ float64(poly)
 
 #p= plotPartAndD(poly, D)
 #draw(PNG("xx.png", 300px, 200px), p)
+
+rem1 mieux que modulo :
+
+rem1(5,4)
+
