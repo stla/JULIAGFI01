@@ -3,8 +3,37 @@ function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
         if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
             slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
             return [ minimum(slopes) ; maximum(slopes) ]
-        else
-            return "wait"
+        else # the y-axis cuts the paricle
+            where = (isInside(poly, lower), isInside(poly, upper))
+            if (where[1]=="inside" || where[2]=="inside") # one point is inside
+                    return [-Inf, Inf]
+            elseif where[1]=="below" && where[2]=="above" # lower is below, upper is above
+                    return "nothing to do"
+            elseif where[1]=="above"
+                    neg = find(poly[1,:].<0)
+                    left = minimum((poly[2,neg]-lower)./poly[1,neg])
+                    pleft = ccdf(Cauchy(), left)
+                    #
+                    pos = find(poly[1,:].>0)
+                    right = maximum((poly[2,pos]-upper)./poly[1,pos])  # ou (VTsum[i]-l)/sigma[i] avec i <- which.max(sigma)
+                    pright = cdf(Cauchy(), right)
+                    #
+                    p = pleft+pright
+                    if rand()<pleft/p return [left ; Inf] else return [-Inf ; right] end
+            elseif where[2]=="below"
+                    neg = find(poly[1,:].<0)
+                    left = maximum((poly[2,neg]-upper)./poly[1,neg])
+                    pleft = cdf(Cauchy(), left)
+                    #
+                    pos = find(poly[1,:].>0)
+                    right = minimum((poly[2,pos]-upper)./poly[1,pos])
+                    pright = ccdf(Cauchy(), right)
+                    #
+                    p = pleft+pright
+                    if rand()<pleft/p return [Inf ; left] else return [right, Inf] end
+            else
+                    return "something wrong ! (possibly a vertex on the y-axis)"
+            end
         end
 end
 
