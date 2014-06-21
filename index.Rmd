@@ -12,9 +12,12 @@ mode        : selfcontained # {standalone, draft}
 
 
 ```{r setup, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+extensions <- markdown::markdownExtensions()
+options(markdown.extensions=extensions[!is.element(extensions,c("superscript"))])
+#options(markdown.extensions=NULL)
 #setwd("D:/Github/JuliaGFI01"); library(slidify); slidify("index.Rmd")
 source("assets/R/slidifyMacros.R")
-source('D:/Work/Fiducial/R/particle_01_functions.R')
+source('samsung/FiducialR/R/particle_01_functions.R')
 library(knitr)
 library(animation)
 library(scales)
@@ -458,13 +461,13 @@ We will restrict to this situation in these slides.
 ## The range in the simple situation 
 
 Denote by $P$ the current particle and by 
-$\color{red}{\{a^-, a^+\}}$ the new pair of points on the $y$-axis. 
+$\color{red}{\lbrace a^-, a^+\rbrace}$ the new pair of points on the $y$-axis. 
 Then the possible range for the slope of the new ribbon is the interval 
 $(m,M)$ where 
 $$ 
-m = \min_{(x,y) \in P} \left\{\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\}
+m = \underset{(x,y) \in P}{\min} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rbrace
 \quad \text{and} \quad 
-M = \max_{(x,y) \in P} \left\{\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\}
+M = \max_{(x,y) \in P} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rbrace
 $$
 
 ```{r julia_range, results='asis', echo=FALSE}

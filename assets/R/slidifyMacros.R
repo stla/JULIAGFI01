@@ -87,7 +87,7 @@ includeGadfly1 <- function(file, dirfile="assets/Julia", scale=NULL, height){ # 
   cat(sprintf('<iframe src="assets/img/%s" style="border: none; height:%s"></iframe>', htmlFile, height))
 }
 
-# ça déconne avec srcdoc, utiliser un vrai iframe
+# Ã§a dÃ©conne avec srcdoc, utiliser un vrai iframe
 includeGadfly <- function(file, dirfile="assets/Julia", width=NULL, height=NULL, scale=1){ # width = "10px"
   id <- paste0("gadfly_",file)
   file <- paste0(file, ".js")

@@ -1,7 +1,8 @@
 *.md
 assets/Julia/*.png
 *.Rhistory
-.Rhistory
+samsung/
+.cache/
 
 #################
 ## Eclipse

@@ -100,7 +100,7 @@ polyhedra are sequentially sampled and become smaller and smaller and smaller...
     
 <div class='leftcol' style='width:33%;'>
   <ul>
-<li><p><em>Data:</em> Some pairs of points are given on the \(y\)-axis</p></li>
+<li><p><em>Data:</em> Some pairs of points are given on the $y$-axis</p></li>
 <li><p><em>Sampling:</em> Some ribbons issued from these points are sampled at random </p></li>
 <li><p><em>Computation:</em> The polyhedron at the intersection of the ribbons</p></li>
 </ul>
@@ -199,7 +199,7 @@ polyhedra are sequentially sampled and become smaller and smaller and smaller...
   <article data-timings="">
     <ul>
 <li><p>A line has a &#39;&#39;type&#39;&#39;: upper or lower</p></li>
-<li><p>A line has \(0\), \(1\) or \(2\) intersections with the active polyhedron</p></li>
+<li><p>A line has $0$, $1$ or $2$ intersections with the active polyhedron</p></li>
 </ul>
 
 <div class='leftcol' style='width:60%;'>
@@ -366,6 +366,16 @@ function plotPart(poly::Array{BigFloat,2})
         p = plot(x = x, y = y, Geom.point, Geom.line(preserve_order=true))
         return p
 end
+
+function plotPartAndD(poly::Array{BigFloat,2}, D::Line)
+        poly = orderPart(poly)
+        x = float64(poly[1,[1:size(poly,2);1]])
+        y = float64(poly[2,[1:size(poly,2);1]])
+        xD = float64([minimum(x) maximum(x)])
+        yD = float64(D.a+D.b*xD)
+        p = plot(layer(x = x, y = y, Geom.point, Geom.line(preserve_order=true)), layer(x=xD, y=yD, Geom.line, Theme(default_color=color("red"))))
+        return p
+end
 </code></pre>
 
 <div class='leftcol' style='width:34%;'>
@@ -400,7 +410,7 @@ draw(D3("part01.js", 630px, 340px), p)
   </hgroup>
   <article data-timings="">
     <p>Recall the two steps, when a particle and a new pair of starting points 
-on the \(y\)-axis is given:</p>
+on the $y$-axis is given:</p>
 
 <ul>
 <li><p>Calculate the range of the possible slope of the new ribbon</p></li>
@@ -434,20 +444,86 @@ We will restrict to this situation in these slides.</p>
     <h2>The range in the simple situation</h2>
   </hgroup>
   <article data-timings="">
-    <p>Denote by \(P\) the current particle and by 
-\(\color{red}{\{a^-, a^+\}}\) the new pair of points on the \(y\)-axis. 
+    <p>Denote by $P$ the current particle and by 
+$\color{red}{\lbrace a^-, a^+\rbrace}$ the new pair of points on the $y$-axis. 
 Then the possible range for the slope of the new ribbon is the interval 
-\((m,M)\) where 
-\[ 
-m = \min_{(x,y) \in P} \left\{\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\}
+$(m,M)$ where 
+$$ 
+m = \underset{(x,y) \in P}{\min} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rbrace
 \quad \text{and} \quad 
-M = \max_{(x,y) \in P} \left\{\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\}
-\]</p>
+M = \max_{(x,y) \in P} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rbrace
+$$</p>
 
 <pre><code class="r" style="font-size:71%"># find the range
 function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
-        slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
-        return [ minimum(slopes) ; maximum(slopes) ]
+        if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
+            slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
+            return [ minimum(slopes) ; maximum(slopes) ]
+        else # the y-axis cuts the paricle
+            where = (isInside(poly, lower), isInside(poly, upper))
+            if (where[1]=="inside" || where[2]=="inside") # one point is inside
+                    return [-Inf, Inf]
+            elseif where[1]=="below" && where[2]=="above" # lower is below, upper is above
+                    return "nothing to do"
+            elseif where[1]=="above"
+                    neg = find(poly[1,:].<0)
+                    left = minimum((poly[2,neg]-lower)./poly[1,neg])
+                    pleft = ccdf(Cauchy(), left)
+                    #
+                    pos = find(poly[1,:].>0)
+                    right = maximum((poly[2,pos]-upper)./poly[1,pos])  # ou (VTsum[i]-l)/sigma[i] avec i <- which.max(sigma)
+                    pright = cdf(Cauchy(), right)
+                    #
+                    p = pleft+pright
+                    if rand()<pleft/p return [left ; Inf] else return [-Inf ; right] end
+            elseif where[2]=="below"
+                    neg = find(poly[1,:].<0)
+                    left = maximum((poly[2,neg]-upper)./poly[1,neg])
+                    pleft = cdf(Cauchy(), left)
+                    #
+                    pos = find(poly[1,:].>0)
+                    right = minimum((poly[2,pos]-upper)./poly[1,pos])
+                    pright = ccdf(Cauchy(), right)
+                    #
+                    p = pleft+pright
+                    if rand()<pleft/p return [Inf ; left] else return [right, Inf] end
+            else
+                    return "something wrong ! (possibly a vertex on the y-axis)"
+            end
+        end
+end
+
+function isInside(opoly::Array{BigFloat,2}, a::Float64)
+        x1 = vec(opoly[1,:])
+        x2 = x1[[2:length(x1); 1]]
+        # ceux qui coupent
+        cutting = find( x1.*x2 .<0)
+        #
+        intercepts = (getLine(opoly,cutting[1])[1], getLine(opoly,cutting[2])[1])
+        (amin, amax) =( minimum(intercepts) , maximum(intercepts) )
+        #
+        if a < amin
+                return "below"
+        elseif a > amax
+                return "above"
+        else
+                return "inside"
+        end
+end
+
+
+# test whether a point (0,a) is inside the polyhedron
+function isInside_trash(poly::Array{BigFloat,2}, a::Float64)
+        polyright = poly[:, find(poly[1,:] .> 0)]
+        polyleft = poly[:, find(poly[1,:] .< 0)]
+        slopes_right = (polyright[2,:] - a)./polyright[1,:]
+        slopes_left = (polyleft[2,:] - a)./polyleft[1,:]
+        extrem_right = findmin(abs(slopes_right))[2]
+        extrem_left = findmin(abs(slopes_left))[2]
+        #
+        angle1 = atan2(polyright[1,extrem_right], polyright[2,extrem_right] - a)
+        angle2 = atan2(polyleft[1,extrem_left], polyleft[2,extrem_left] - a)
+        return angle1 - angle2
 end
 </code></pre>
 
@@ -487,8 +563,8 @@ R3 = Ribbon(a_low, a_upp, b)
 
 </div>
 <div class='rightcol' style='width:45%;'>
-  <p>The \(i\)-th edge of the ordered particle is the segment \([AB]\) with 
-\(A=(x_1(i), y_1(i))\) and \(B=(x_2(i), y_2(i))\).</p>
+  <p>The $i$-th edge of the ordered particle is the segment $[AB]$ with 
+$A=(x_1(i), y_1(i))$ and $B=(x_2(i), y_2(i))$.</p>
 
 <pre><code class="r" style="font-size:71%">x1 = vec(poly[1,:])
 y1 = vec(poly[2,:])
@@ -511,7 +587,7 @@ y2 = y1[[2:length(x1); 1]]
   <article data-timings="">
     
 <div class='leftcol' style='width:47%;'>
-  <p>For each edge (\(1\), \(2\), \(3\), \(4\)) of the current particle, here are the number of 
+  <p>For each edge ($1$, $2$, $3$, $4$) of the current particle, here are the number of 
 vertices above the lower new line:</p>
 
 <pre><code class="r" style="font-size:71%">D = Dlow(R3)
@@ -559,13 +635,14 @@ vertices above the lower new line:</p>
   <article data-timings="">
     
 <div class='leftcol' style='width:49%;'>
-  <p>We  use the following function to get the \(i\)-th edge of the ordered 
+  <p>We  use the following function to get the $i$-th edge of the ordered 
 particle:</p>
 
 <pre><code class="r" style="font-size:68%"># converts an edge to (intercept, slope)
 function getLine(opoly::Array{BigFloat,2}, index::Int)
         A = opoly[:,index]
-        B = opoly[:,mod(index+1,size(poly,2))]
+        #B = opoly[:,mod(index,size(opoly,2))+1]
+        B = opoly[:,rem1(index+1,size(opoly,2))]
         slope = (B[2]-A[2])/(B[1]-A[1])
         intercept = A[2] - slope*A[1]
         return (intercept, slope)
