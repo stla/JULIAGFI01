@@ -39,9 +39,7 @@ end
 
 function isInside(opoly::Array{BigFloat,2}, a::Float64)
         x1 = vec(opoly[1,:])
-        y1 = vec(opoly[2,:])
         x2 = x1[[2:length(x1); 1]]
-        y2 = y1[[2:length(x1); 1]]
         # ceux qui coupent
         cutting = find( x1.*x2 .<0)
         #

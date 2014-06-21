@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://rawgit.com/dcjones/Gadfly.jl/master/src/gadfly.js"></script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script>
+$(document).ready(function()
+  {
+  $("#btn1").click(function(){
+   // d3.select("#my_chart2 svg")
+     // .attr("viewBox", "0 0 100 100")
+    //  .attr("width", "100mm")
+    //  .attr("height", "100mm")
+    //  .attr("preserveAspectRatio", "xMidYMid meet"); 
+    // il faut préserver le rapport 
+    var width = parseFloat(d3.select("#my_chart2 svg").attr("width"))
+    var height = parseFloat(d3.select("#my_chart2 svg").attr("height"))
+     d3.select("#my_chart2 svg").attr("width", width*2 +"mm").attr("height", height*2 +"mm");
+    //d3.select("#my_chart2 svg").attr("width", "100mm").attr("height", "100mm");
+  });
+  $("#btn2").click(function(){
+    var width = d3.select("#my_chart2 svg").attr("width").replace(/[^-\d\.]/g, '')
+    var height = d3.select("#my_chart2 svg").attr("height").replace(/[^-\d\.]/g, '')
+     d3.select("#my_chart2 svg").attr("width", width/2 +"mm").attr("height", height/2 +"mm");
+     var save = d3.select("#my_chart2").html()
+     d3.select("#my_chart2 svg").remove();
+     d3.select("#my_chart2").html(save);
+  });
+});
+</script>
+
+</head>
+<body>
+<button id="btn1">scale x2</button>
+<button id="btn2">scale x0.5</button>
+<div id="my_chart2"></div>
+<script src="https://rawgit.com/stla/JULIAGFI01/gh-pages/assets/Julia/part01.js"></script>
+<script>
+draw("#my_chart2");
+</script>
+</body>
+</html>

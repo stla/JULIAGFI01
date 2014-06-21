@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+#wrap {  
+    width: 630px;
+    height: 300px;
+    padding: 0;
+    overflow: hidden;
+}
+#frame {  
+    -ms-zoom: 0.75;
+    -ms-transform-origin: 0 0;
+    -moz-transform: scale(0.75);
+    -moz-transform-origin: 0px 50px;
+    -o-transform: scale(0.75);
+    -o-transform-origin: 0px 50px;
+    -webkit-transform: scale(0.75);
+    -webkit-transform-origin: 0 0;
+}
+#frame {
+    width: 1230px;
+    height: 530px;
+    overflow: hidden;
+}
+</style>
+</head>
+<body>
+
+
+<div id="wrap"><iframe id="frame" srcdoc='
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="../js/gadfly.js"></script>
+
+</head>
+<body>
+<div id="my_chart"></div>
+<script src="http://stla.github.io/JULIAGFI01/assets/Julia/part01.js"></script>
+<script>
+draw("#my_chart");
+</script>
+</body>
+' src="demo_iframe_srcdoc.htm">
+  <p>Your browser does not support iframes.</p>
+</iframe>
+
+<p><strong>Note:</strong> The srcdoc attribute of the iframe tag is supported only in Firefox, Chrome and Safari 6.</p>
+
+</body>
+</html>
+</div>
