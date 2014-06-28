@@ -28,7 +28,7 @@ function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1},
     if Dinters[2]-Dinters[1] != 1
             arrange = [ncol, [1:ncol-1]]
     else
-            arrange = mod([1:ncol]+Dinters[1]-2, ncol)+1
+            arrange = mod([1:ncol]+Dinters[1]-2, ncol)+1 # use rem1 (see getLine)
     end
     opoly = opoly[:, arrange]
     # M
@@ -48,14 +48,8 @@ end
 function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Line)
 
         opoly = deepcopy(poly) # otherwise the function replaces the value !?
-        #for D = (D3_low, D3_upp)
-
-            x1 = vec(opoly[1,:])
-            y1 = vec(opoly[2,:])
-            x2 = x1[[2:length(x1); 1]]
-            y2 = y1[[2:length(x1); 1]]
-            test1 = y1 .> D.a .+ D.b .* x1
-            test2 = y2 .> D.a .+ D.b .* x2
+            test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
+            test2 = test1[[2:size(opoly)[2]; 1]]
             test = test1 + test2
             if(D.typ==false)
                 Remove = test .== 0
@@ -75,7 +69,7 @@ function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Li
                         return opoly
                     end
             else
-                    if Remove[1] && Remove[2]
+                    if Remove[1] && Remove[2] # non - voir code R
                         indices = find(!Remove)
                         torem =  last(indices)+1# length(Remove) - findfirst(reverse(!Remove)) + 2
                         indices = [indices, torem]

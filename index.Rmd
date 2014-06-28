@@ -15,7 +15,7 @@ mode        : selfcontained # {standalone, draft}
 extensions <- markdown::markdownExtensions()
 options(markdown.extensions=extensions[!is.element(extensions,c("superscript"))])
 #options(markdown.extensions=NULL)
-#setwd("D:/Github/JuliaGFI01"); library(slidify); slidify("index.Rmd")
+#setwd("~/Github/JULIAGFI01"); library(slidify); slidify("index.Rmd")
 source("assets/R/slidifyMacros.R")
 source('samsung/FiducialR/R/particle_01_functions.R')
 library(knitr)
@@ -258,7 +258,7 @@ abline(a=1, b=1.4, col="red", lwd=2)
 
 - Only lines having two intersections are kept
 
-- A polyhedron is represented by its set of vertices
+- A polyhedron is represented by its set of vertices, but it is more convienently handled by ordering its vertices
 
 
 --- &twocolcustomwidth
@@ -337,7 +337,14 @@ poly = orderPart(hcat(A,B,C,D))', size="68%")
 ## Plotting a Javascript particle with [Gadfly](https://github.com/dcjones/Gadfly.jl)
 
 ```{r julia_fplotPart, results='asis', echo=FALSE, cache=FALSE}
-codechunk(file="function_plotPart.jl", size="66%")
+codechunk('using Gadfly
+function plotPart(poly::Array{BigFloat,2})
+        poly = orderPart(poly)
+        x = float64(poly[1,[1:size(poly,2);1]])
+        y = float64(poly[2,[1:size(poly,2);1]])
+        p = plot(x = x, y = y, Geom.point, Geom.line(preserve_order=true))
+        return p
+end', size="66%")
 ```
 
 
@@ -470,22 +477,28 @@ m = \underset{(x,y) \in P}{\min} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x
 M = \max_{(x,y) \in P} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rbrace
 $$
 
+*** {name: left, width: "55%"}
+
 ```{r julia_range, results='asis', echo=FALSE}
-codechunk(file="function_findRange.jl", size="71%")
+codechunk('function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
+        if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
+            slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
+            return [ minimum(slopes) ; maximum(slopes) ]
+        else # the y-axis cuts the paricle
+            .... not shown in theses slides ', size="69%")
 ```
-
-*** {name: left, width: "51%"}
-
-```{r showgif2, results='asis', echo=FALSE}
-cat('<img src="assets/img/range.gif" title="Range of the new ribbon to be sampled" alt="plot of chunk xxx" style="display: block; margin: auto;" width="65%">')
-```
-
-*** {name: right, width: "45%"}
 
 `r linebreak("30pt")`
 
 It remains to write a function calculating the new particle once the new ribbon 
-is sampled
+is sampled.
+
+*** {name: right, width: "45%"}
+
+```{r showgif2, results='asis', echo=FALSE}
+cat('<img src="assets/img/range.gif" title="Range of the new ribbon to be sampled" alt="plot of chunk xxx" style="display: block; margin: auto;" width="750">')
+```
+
 
 
 --- &twocolcustomwidth
@@ -542,19 +555,27 @@ D31["b"] <- D32["b"] <- 0.5
       points(c(0,0), c(D31["a"], D32["a"]), col="red", pch=19, cex=2, xpd=TRUE)
 ```
 
-*** {name: right, width: "45%"}
+*** {name: right, width: "50%"}
 
-The $i$-th edge of the ordered particle is the segment $[AB]$ with 
-$A=(x_1(i), y_1(i))$ and $B=(x_2(i), y_2(i))$.
+For each edge ($1$, $2$, $3$, $4$) of the current particle, here are the number of 
+vertices above the lower new line:
 
-```{r julia_orderpoly, results='asis', echo=FALSE}
-codechunk('x1 = vec(poly[1,:])
-y1 = vec(poly[2,:])
-x2 = x1[[2:length(x1); 1]]
-y2 = y1[[2:length(x1); 1]]', size="71%")
+  
+```{r julia_test12, results='asis', echo=FALSE}
+codechunk("D = Dlow(R3)
+test1 = vec(poly[2,:]) .> D.a .+ D.b .* vec(poly[1,:])
+test2 = test1[[2:size(opoly)[2]; 1]]
+test = test1 + test2", size="68%")
 ```
 
-
+```{r julia_test12_out, results='asis', echo=FALSE}
+codechunk("julia> test
+4-element Array{Int64,1}:
+ 0
+ 1
+ 2
+ 1", size="68%")
+```
 
 
 --- &twocolcustomwidth
@@ -563,31 +584,21 @@ y2 = y1[[2:length(x1); 1]]', size="71%")
 
 *** {name: left, width: "47%"}
 
-For each edge ($1$, $2$, $3$, $4$) of the current particle, here are the number of 
-vertices above the lower new line:
+Given the results:
 
-  
-```{r julia_test12, results='asis', echo=FALSE}
-codechunk("D = Dlow(R3)
-    test1 = y1 .> D.a .+ D.b .* x1
-    test2 = y2 .> D.a .+ D.b .* x2
-    test = test1 + test2", size="71%")
+```{r julia_test12_out_copy, ref.label='julia_test12_out', results='asis', echo=FALSE}
+```
+
+```{r plot_newribbon_01_copy, ref.label='plot_newribbon_01', echo=FALSE, cache=FALSE, fig.height=4.3}
 ```
 
 
-```{r julia_test12_out, results='asis', echo=FALSE}
-codechunk("julia> test
-4-element Array{Int64,1}:
- 0
- 1
- 2
- 1", size="71%")
-```
+
 
 
 *** {name: right, width: "50%"}
 
-Thus:
+We know that:
 
   - The first edge has to be removed
 
