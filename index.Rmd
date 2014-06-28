@@ -1,7 +1,7 @@
 ---
 title       : Julia implementation of GFI
 subtitle    : First part - the polyhedra sampler
-author      : Stephane Laurent
+author      : Stéphane Laurent
 job         : 
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
@@ -585,7 +585,7 @@ codechunk("julia> test
 
 *** {name: left, width: "47%"}
 
-Given the results:
+Given these results:
 
 ```{r julia_test12_out_copy, ref.label='julia_test12_out', results='asis', echo=FALSE}
 ```
@@ -596,7 +596,7 @@ Given the results:
 
 *** {name: right, width: "50%"}
 
-We know that:
+$\implies$ we know that:
 
   - The first edge has to be removed
 
@@ -661,7 +661,7 @@ for(i in 1:4){
   - `updatePoly()` handles the general case: 
     - it determines the situation
     - it runs `updatePoly1()` or `updatePoly2()` in case 1 or 2 
-    - deletes some vertices and runs `updatePoly1` in case of $>2$ points outside 
+    - deletes some vertices and runs `updatePoly1()` in case of $>2$ points outside 
 
 --- &twocolcustomwidth
 

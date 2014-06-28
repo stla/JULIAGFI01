@@ -4,7 +4,7 @@
   <title>Julia implementation of GFI</title>
   <meta charset="utf-8">
   <meta name="description" content="Julia implementation of GFI">
-  <meta name="author" content="Stephane Laurent">
+  <meta name="author" content="Stéphane Laurent">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -39,7 +39,7 @@
   <hgroup class="auto-fadein">
     <h1>Julia implementation of GFI</h1>
     <h2>First part - the polyhedra sampler</h2>
-    <p>Stephane Laurent<br/></p>
+    <p>Stéphane Laurent<br/></p>
   </hgroup>
   <article></article>  
 </slide>
@@ -522,7 +522,7 @@ test = test1 + test2
   <article data-timings="">
     
 <div class='leftcol' style='width:47%;'>
-  <p>Given the results:</p>
+  <p>Given these results:</p>
 
 <pre><code class="r" style="font-size:68%">julia> test
 4-element Array{Int64,1}:
@@ -536,7 +536,7 @@ test = test1 + test2
 
 </div>
 <div class='rightcol' style='width:50%;'>
-  <p>We know that:</p>
+  <p>$\implies$ we know that:</p>
 
 <ul>
 <li><p>The first edge has to be removed</p></li>
@@ -603,7 +603,7 @@ test = test1 + test2
 <ul>
 <li>it determines the situation</li>
 <li>it runs <code>updatePoly1()</code> or <code>updatePoly2()</code> in case 1 or 2 </li>
-<li>deletes some vertices and runs <code>updatePoly1</code> in case of $&gt;2$ points outside </li>
+<li>deletes some vertices and runs <code>updatePoly1()</code> in case of $&gt;2$ points outside </li>
 </ul></li>
 </ul>
 
