@@ -70,6 +70,6 @@ function updatePoly(poly::Array{BigFloat,2}, D::Line)
                         torem = toRemove[1]
                     end
                     println("case 3\n")
-                    updatePoly1(opoly[:,indices], D, torem)
+                    return updatePoly1(opoly[:,indices], D, torem)
             end
 end
