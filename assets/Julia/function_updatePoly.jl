@@ -1,10 +1,3 @@
-#
-#function cleanPoly(x1, y1, x2, y2, toRemove, D.typ)
-#
-#        return(opoly)
-#end
-
-
 # case one edge to remove
 function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
         # first edge
@@ -21,23 +14,21 @@ function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
 end
 
 # case "chanfrein"
-
-function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1}, test2::BitArray{1})
+function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1}, test1::BitArray{1})
     # shift to put the two edges at first positions
     ncol = size(opoly)[2]
     if Dinters[2]-Dinters[1] != 1
             arrange = [ncol, [1:ncol-1]]
     else
-            arrange = mod([1:ncol]+Dinters[1]-2, ncol)+1 # use rem1 (see getLine)
+            arrange = [rem1(i+Dinters[1]-1,ncol)::Int for i=1:ncol] # mod([1:ncol]+Dinters[1]-2, ncol)+1 
     end
     opoly = opoly[:, arrange]
-    # M
+    # intersections
     M = intersect((D.a,D.b), getLine(opoly,1))
-    # N
     N = intersect((D.a,D.b), getLine(opoly,2))
     #
-    test = test2[1]
-    if( (!D.typ && test) || (D.typ && !test) )
+    test = test1[arrange][2]
+    if( (!D.typ && !test) || (D.typ && test) )
         return hcat(opoly[:,1], M, N, opoly[:, [3:ncol]])
     else
         return hcat(M, opoly[:,2], N)
@@ -45,7 +36,7 @@ function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1},
 end
 
 # general case
-function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Line)
+function updatePoly(poly::Array{BigFloat,2}, D::Line) 
 
         opoly = deepcopy(poly) # otherwise the function replaces the value !?
             test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
@@ -64,24 +55,21 @@ function updatePoly(poly::Array{BigFloat,2}, D::Line) # D3_low::Line, D3_upp::Li
                     Dinters=find(test.== 1)
                     if length(Dinters) == 2
                         println("case 2\n")
-                        return updatePoly2(opoly, D, Dinters, test2)
+                        return updatePoly2(opoly, D, Dinters, test1)
                     else
                         return opoly
                     end
             else
-                    if Remove[1] && Remove[2] # non - voir code R
+                    if Remove[1] && last(Remove)
                         indices = find(!Remove)
-                        torem =  last(indices)+1# length(Remove) - findfirst(reverse(!Remove)) + 2
-                        indices = [indices, torem]
+                        torem =  size(indices)[1]+1
+                        indices = [indices, last(indices)+1]
                     else
                         indices = [1:size(opoly)[2]]
-                        splice!(indices, toRemove[2]:toRemove[length(toRemove)])
+                        indices = deleteat!(indices, toRemove[2]:last(toRemove))
                         torem = toRemove[1]
                     end
                     println("case 3\n")
                     updatePoly1(opoly[:,indices], D, torem)
             end
-
-        #end # end D = (D3_low, D3_upp)
-
 end

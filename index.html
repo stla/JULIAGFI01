@@ -446,7 +446,8 @@ M = \max_{(x,y) \in P} \left\lbrace\frac{y - a^-}{x}, \frac{y - a^+}{x}\right\rb
 $$</p>
 
 <div class='leftcol' style='width:55%;'>
-  <pre><code class="r" style="font-size:69%">function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
+  <pre><code class="r" style="font-size:69%">function findRange(poly::Array{BigFloat,2}, lower::Float64, 
+            upper::Float64)
         if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
             slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
             return [ minimum(slopes) ; maximum(slopes) ]
@@ -454,7 +455,7 @@ $$</p>
             .... not shown in theses slides 
 </code></pre>
 
-<hr style="height:30pt; visibility:hidden;"/>
+<hr style="height:10pt; visibility:hidden;"/>
 
 <p>It remains to write a function calculating the new particle once the new ribbon 
 is sampled.</p>
@@ -473,7 +474,7 @@ is sampled.</p>
 
 <slide class="" id="slide-12" style="background:;">
   <hgroup>
-    <h2>The intersection in the simple situation (1/2)</h2>
+    <h2>The intersection (1/6)</h2>
   </hgroup>
   <article data-timings="">
     
@@ -516,12 +517,14 @@ test = test1 + test2
 
 <slide class="" id="slide-13" style="background:;">
   <hgroup>
-    <h2>The intersection in the simple situation (2/2)</h2>
+    <h2>The intersection (2/6)</h2>
   </hgroup>
   <article data-timings="">
     
 <div class='leftcol' style='width:47%;'>
-  <pre><code class="r" style="font-size:68%">julia> test
+  <p>Given the results:</p>
+
+<pre><code class="r" style="font-size:68%">julia> test
 4-element Array{Int64,1}:
  0
  1
@@ -533,7 +536,7 @@ test = test1 + test2
 
 </div>
 <div class='rightcol' style='width:50%;'>
-  <p>Thus:</p>
+  <p>We know that:</p>
 
 <ul>
 <li><p>The first edge has to be removed</p></li>
@@ -557,27 +560,210 @@ test = test1 + test2
 
 <slide class="" id="slide-14" style="background:;">
   <hgroup>
-    <h2>to continue....</h2>
+    <h2>The intersection (3/6)</h2>
   </hgroup>
   <article data-timings="">
     
 <div class='leftcol' style='width:49%;'>
+  <p>There are four situations for the intersection: </p>
+
+<div class="scianimator">
+<div id="foursituations" style="display: inline-block;">
+</div>
+
+<p></div></p>
+
+<script type="text/javascript">
+  (function($) {
+    $(document).ready(function() {
+  foursituations
+    var imgs = Array(4);
+      for (i=0; ; i++) {
+        if (i == imgs.length) break;
+        imgs[i] = "assets/fig/JuliaGFI01-foursituations" + (i + 1) + ".png";
+      }
+      $("#foursituations").scianimator({
+          "images": imgs,
+           "controls": ["previous",  "next"],
+ "keyboard": false,
+ "loopmode": "none",
+ "defaultFrame": 0
+    });
+     });
+  })(jQuery);
+</script>
+
+</div>
+<div class='rightcol' style='width:49%;'>
+  <ul>
+<li><code>updatePoly1()</code> handles the case of two points (one edge) outside</li>
+<li><code>updatePoly2()</code> handles the case of one point outside </li>
+<li><code>updatePoly()</code> handles the general case: 
+
+<ul>
+<li>it determines the situation</li>
+<li>it runs <code>updatePoly1()</code> or <code>updatePoly2()</code> in case 1 or 2 </li>
+<li>deletes some vertices and runs <code>updatePoly1</code> in case of $&gt;2$ points outside </li>
+</ul></li>
+</ul>
+
+</div>
+<div style='clear:both'>
+  
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>The intersection (4/6)</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div class='leftcol' style='width:41%;'>
   <p>We  use the following function to get the $i$-th edge of the ordered 
 particle:</p>
 
-<pre><code class="r" style="font-size:68%"># converts an edge to (intercept, slope)
+<pre><code class="r" style="font-size:64%"># converts an edge to (intercept, slope)
 function getLine(opoly::Array{BigFloat,2}, index::Int)
         A = opoly[:,index]
-        #B = opoly[:,mod(index,size(opoly,2))+1]
-        B = opoly[:,rem1(index+1,size(opoly,2))]
+    B = opoly[:,rem1(index+1,size(opoly,2))]
         slope = (B[2]-A[2])/(B[1]-A[1])
         intercept = A[2] - slope*A[1]
         return (intercept, slope)
 end
 </code></pre>
 
-<iframe src="assets/img/part02.html" style="border: none; height:230px"></iframe>
+</div>
+<div class='rightcol' style='width:56%;'>
+  <p><em>Intersection in case of two points (one edge) outside:</em></p>
 
+<pre><code class="r" style="font-size:64%">function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+        # first edge
+        index = if toRemove==1 size(opoly)[2] else toRemove-1 end
+        M = intersect((D.a,D.b), getLine(opoly,index))
+        # second edge
+        index = if toRemove==size(opoly)[2] 1 else toRemove+1 end
+        N = intersect((D.a,D.b), getLine(opoly,index))
+        #
+        opoly[:,toRemove] = M
+        opoly[:,index] = N
+        #
+        return opoly
+end
+</code></pre>
+
+</div>
+<div style='clear:both'>
+  
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <hgroup>
+    <h2>The intersection (5/6)</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div class='leftcol' style='width:79%;'>
+  <p><em>Intersection in case of one point outside:</em></p>
+
+<pre><code class="r" style="font-size:68%">function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1}, test1::BitArray{1})
+    # shift to put the two edges at first positions
+    ncol = size(opoly)[2]
+    if Dinters[2]-Dinters[1] != 1
+            arrange = [ncol, [1:ncol-1]]
+    else
+            arrange = [rem1(i+Dinters[1]-1,ncol)::Int for i=1:ncol]  
+    end
+    opoly = opoly[:, arrange]
+    # intersections
+    M = intersect((D.a,D.b), getLine(opoly,1))
+    N = intersect((D.a,D.b), getLine(opoly,2))
+    #
+    test = test1[arrange][2]
+    if( (!D.typ && !test) || (D.typ && test) )
+        return hcat(opoly[:,1], M, N, opoly[:, [3:ncol]])
+    else
+        return hcat(M, opoly[:,2], N)
+    end
+end
+</code></pre>
+
+</div>
+<div class='rightcol' style='width:49%;'>
+  
+</div>
+<div style='clear:both'>
+  
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>The intersection (6/6) - main function</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div class='leftcol' style='width:60%;'>
+  <pre><code class="r" style="font-size:56%">function updatePoly(opoly::Array{BigFloat,2}, D::Line)
+            test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
+            test2 = test1[[2:size(opoly)[2]; 1]]
+            test = test1 + test2
+            if(D.typ==false)
+                Remove = test .== 0
+            else
+                Remove = test .== 2
+            end
+            toRemove = find(Remove)
+            if length(toRemove) == 1
+                    return updatePoly1(opoly, D, toRemove[1])
+            elseif length(toRemove) == 0
+                    Dinters=find(test.== 1)
+                    if length(Dinters) == 2
+                        return updatePoly2(opoly, D, Dinters, test1)
+                    else
+                        return opoly
+                    end
+            else
+                    if Remove[1] && last(Remove)
+                        indices = find(!Remove)
+                        torem =  size(indices)[1]+1
+                        indices = [indices, last(indices)+1]
+                    else
+                        indices = [1:size(opoly)[2]]
+                        indices = deleteat!(indices, toRemove[2]:last(toRemove))
+                        torem = toRemove[1]
+                    end
+                    updatePoly1(opoly[:,indices], D, torem)
+            end
+end
+</code></pre>
+
+</div>
+<div class='rightcol' style='width:;'>
+  
+</div>
+<div style='clear:both'>
+  
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  <hgroup>
+    <h2>to continue...</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div class='leftcol' style='width:49%;'>
+  
 </div>
 <div class='rightcol' style='width:49%;'>
   <pre><code class="r" style="font-size:68%"> 
@@ -663,20 +849,44 @@ end
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=12 title='The intersection in the simple situation (1/2)'>
+        data-slide=12 title='The intersection (1/6)'>
          12
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=13 title='The intersection in the simple situation (2/2)'>
+        data-slide=13 title='The intersection (2/6)'>
          13
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=14 title='to continue....'>
+        data-slide=14 title='The intersection (3/6)'>
          14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='The intersection (4/6)'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='The intersection (5/6)'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='The intersection (6/6) - main function'>
+         17
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='to continue...'>
+         18
       </a>
     </li>
   </ul>

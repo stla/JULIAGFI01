@@ -413,7 +413,7 @@ if(!file.exists("./assets/img/range.gif")){
       polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("green",0.4), border=NA)
       D1 <- D31
       D2 <- D32
-      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("red",0.4), border=NA)
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("red",0.4), border=NA)      
       plotpart2(part2, lines=FALSE, add=TRUE, col.edge="black")
       points(c(0,0), c(D11["a"], D12["a"]), col="blue", pch=19, cex=2, xpd=TRUE)
       points(c(0,0), c(D21["a"], D22["a"]), col="green", pch=19, cex=2, xpd=TRUE)
@@ -480,7 +480,8 @@ $$
 *** {name: left, width: "55%"}
 
 ```{r julia_range, results='asis', echo=FALSE}
-codechunk('function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
+codechunk('function findRange(poly::Array{BigFloat,2}, lower::Float64, 
+            upper::Float64)
         if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
             slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
             return [ minimum(slopes) ; maximum(slopes) ]
@@ -488,7 +489,7 @@ codechunk('function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Fl
             .... not shown in theses slides ', size="69%")
 ```
 
-`r linebreak("30pt")`
+`r linebreak("10pt")`
 
 It remains to write a function calculating the new particle once the new ribbon 
 is sampled.
@@ -503,7 +504,7 @@ cat('<img src="assets/img/range.gif" title="Range of the new ribbon to be sample
 
 --- &twocolcustomwidth
 
-## The intersection in the simple situation (1/2)
+## The intersection (1/6)
 
 *** {name: left, width: "50%"}
 
@@ -580,7 +581,7 @@ codechunk("julia> test
 
 --- &twocolcustomwidth
 
-## The intersection in the simple situation (2/2)
+## The intersection (2/6)
 
 *** {name: left, width: "47%"}
 
@@ -591,9 +592,6 @@ Given the results:
 
 ```{r plot_newribbon_01_copy, ref.label='plot_newribbon_01', echo=FALSE, cache=FALSE, fig.height=4.3}
 ```
-
-
-
 
 
 *** {name: right, width: "50%"}
@@ -617,26 +615,184 @@ codechunk("julia> Dinters = find(test.== 1) # should be 0 or 2 elements
 
 --- &twocolcustomwidth
 
-## to continue.... 
+## The intersection (3/6)
 
 *** {name: left, width: "49%"}
 
-We  use the following function to get the $i$-th edge of the ordered 
-particle:
+There are four situations for the intersection: 
 
-```{r macro_getline, results='asis', echo=FALSE}
-codechunk(file="function_getLine.jl", size="68%")
-```
-
-
-
-```{r gadfly_part02, results='asis', echo=FALSE, cache=FALSE}
-includeGadfly1("part02", scale=1.1, height="230px") 
+```{r foursituations, echo=FALSE, fig.show='animate', cache=FALSE,  fig.height=5}
+par(bg = "white")
+seq.b <- c(0, 0.3, 0.6, 0.95)
+seq.main <- paste0("Case: ", c("Nothing to do", "One vertex outside", "Two vertices outside", "More than two outside" ))
+for(i in 1:4){
+        D31["b"] <- seq.b[i]
+      part2 <- findVert(part, D31)
+      parttemp <- rbind(part,D31)
+      parttemp[, "include"] <- 1
+      par(bg = "white")
+      xlim <- c(0,2)
+      ylim <- c(0,6.5)
+      #
+      par(mar=c(3,3,3,1))
+      plotpart2(parttemp, xlim=xlim, ylim=ylim, lines=TRUE, edges=FALSE, vertices=FALSE,  col.line=rep(c("blue","green", "red"),each=2), 
+                main=seq.main[i], cex.main=1.5)
+      D1 <- D11
+      D2 <- D12
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("blue",0.4), border=NA)
+      D1 <- D21
+      D2 <- D22
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("green",0.4), border=NA)
+      D1 <- D31
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], 100, 100, D1["a"]+D1["b"]*xlim[2]), col=alpha("red",0.4), border=NA)
+      
+      plotpart2(part2, lines=FALSE, add=TRUE, col.edge="black")
+      points(c(0,0), c(D11["a"], D12["a"]), col="blue", pch=19, cex=2, xpd=TRUE)
+      points(c(0,0), c(D21["a"], D22["a"]), col="green", pch=19, cex=2, xpd=TRUE)
+      points(c(0), c(D31["a"]), col="red", pch=19, cex=2, xpd=TRUE)
+}
 ```
 
 
 *** {name: right, width: "49%"}
 
-```{r julia_xxxx, results='asis', echo=FALSE}
+  - `updatePoly1()` handles the case of two points (one edge) outside
+  - `updatePoly2()` handles the case of one point outside 
+  - `updatePoly()` handles the general case: 
+    - it determines the situation
+    - it runs `updatePoly1()` or `updatePoly2()` in case 1 or 2 
+    - deletes some vertices and runs `updatePoly1` in case of $>2$ points outside 
+
+--- &twocolcustomwidth
+
+## The intersection (4/6)
+
+*** {name: left, width: "41%"}
+
+We  use the following function to get the $i$-th edge of the ordered 
+particle:
+
+```{r macro_getline, results='asis', echo=FALSE}
+codechunk('# converts an edge to (intercept, slope)
+function getLine(opoly::Array{BigFloat,2}, index::Int)
+        A = opoly[:,index]
+  	B = opoly[:,rem1(index+1,size(opoly,2))]
+        slope = (B[2]-A[2])/(B[1]-A[1])
+        intercept = A[2] - slope*A[1]
+        return (intercept, slope)
+end', size="64%")
+```
+
+
+*** {name: right, width: "56%"}
+
+*Intersection in case of two points (one edge) outside:*
+
+```{r julia_updatePoly1, results='asis', echo=FALSE}
+codechunk('function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+        # first edge
+        index = if toRemove==1 size(opoly)[2] else toRemove-1 end
+        M = intersect((D.a,D.b), getLine(opoly,index))
+        # second edge
+        index = if toRemove==size(opoly)[2] 1 else toRemove+1 end
+        N = intersect((D.a,D.b), getLine(opoly,index))
+        #
+        opoly[:,toRemove] = M
+        opoly[:,index] = N
+        #
+        return opoly
+end', size="64%")
+```
+
+
+--- &twocolcustomwidth
+
+## The intersection (5/6)
+
+*** {name: left, width: "79%"}
+
+*Intersection in case of one point outside:*
+
+```{r julia_updatePoly2, results='asis', echo=FALSE}
+codechunk('function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1}, test1::BitArray{1})
+    # shift to put the two edges at first positions
+    ncol = size(opoly)[2]
+    if Dinters[2]-Dinters[1] != 1
+            arrange = [ncol, [1:ncol-1]]
+    else
+            arrange = [rem1(i+Dinters[1]-1,ncol)::Int for i=1:ncol]  
+    end
+    opoly = opoly[:, arrange]
+    # intersections
+    M = intersect((D.a,D.b), getLine(opoly,1))
+    N = intersect((D.a,D.b), getLine(opoly,2))
+    #
+    test = test1[arrange][2]
+    if( (!D.typ && !test) || (D.typ && test) )
+        return hcat(opoly[:,1], M, N, opoly[:, [3:ncol]])
+    else
+        return hcat(M, opoly[:,2], N)
+    end
+end', size="68%")
+```
+
+*** {name: right, width: "49%"}
+
+
+--- &twocolcustomwidth
+
+## The intersection (6/6) - main function
+
+
+*** {name: left, width: "60%"}
+
+```{r julia_uupdatePoly, results='asis', echo=FALSE}
+codechunk('function updatePoly(opoly::Array{BigFloat,2}, D::Line)
+            test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
+            test2 = test1[[2:size(opoly)[2]; 1]]
+            test = test1 + test2
+            if(D.typ==false)
+                Remove = test .== 0
+            else
+                Remove = test .== 2
+            end
+            toRemove = find(Remove)
+            if length(toRemove) == 1
+                    return updatePoly1(opoly, D, toRemove[1])
+            elseif length(toRemove) == 0
+                    Dinters=find(test.== 1)
+                    if length(Dinters) == 2
+                        return updatePoly2(opoly, D, Dinters, test1)
+                    else
+                        return opoly
+                    end
+            else
+                    if Remove[1] && last(Remove)
+                        indices = find(!Remove)
+                        torem =  size(indices)[1]+1
+                        indices = [indices, last(indices)+1]
+                    else
+                        indices = [1:size(opoly)[2]]
+                        indices = deleteat!(indices, toRemove[2]:last(toRemove))
+                        torem = toRemove[1]
+                    end
+                    updatePoly1(opoly[:,indices], D, torem)
+            end
+end', size="56%")
+```
+
+
+
+--- &twocolcustomwidth
+
+## to continue...
+
+*** {name: left, width: "49%"}
+
+*** {name: right, width: "49%"}
+
+```{r julia_xxxxxxxxxxx, results='asis', echo=FALSE}
 codechunk(' ', size="68%")
 ```
+
+
