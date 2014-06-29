@@ -301,33 +301,33 @@ particle for illustration.
 *** {name: left, width: "49%"}
 
 ```{r julia_DlowDupp, results='asis', echo=FALSE, cache=FALSE}
-codechunk(file="function_DlowDupp.jl", size="68%")
+codechunk(file="function_DlowDupp.jl", size="61%")
 ```
 
 ```{r julia_intersect, results='asis', echo=FALSE, cache=FALSE}
-codechunk(file="function_intersect.jl", size="68%")
+codechunk(file="function_intersect.jl", size="61%")
+codechunk(file="function_ipart.jl", size="61%")
 ```
 
 *** {name: right, width: "51%"}
 
+*Example:*
+
 ```{r julia_firstP, results='asis', echo=FALSE, cache=FALSE}
 codechunk('# first ribbon: 
 R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
-D1_low = Dlow(R1);
-D1_upp = Dupp(R1);
 # second ribbon:
 R2 = Ribbon(4.5, 5.9, BigFloat("-2"));
-D2_low = Dlow(R2);
-D2_upp = Dupp(R2);
+# find the intersection polyhedron:
+poly0 = poly = ipart(R1, R2)', size="68%")
+```
 
-# find the intersections:
-A = intersect((D1_low.a, D1_low.b), (D2_low.a, D2_low.b));
-B = intersect((D1_low.a, D1_low.b), (D2_upp.a, D2_upp.b));
-C = intersect((D1_upp.a, D1_upp.b), (D2_low.a, D2_low.b));
-D = intersect((D1_upp.a, D1_upp.b), (D2_upp.a, D2_upp.b));
-
-# particle:
-poly = orderPart(hcat(A,B,C,D))', size="68%")
+```{r julia_firstP_out, results='asis', echo=FALSE, cache=FALSE}
+codechunk('julia> float64(poly)
+2x4 Array{Float64,2}:
+ 1.17143  1.57143  1.25714  0.857143
+ 2.15714  2.75714  3.38571  2.78571 
+', size="68%")
 ```
 
 
@@ -513,7 +513,7 @@ a_low = 2.;
 a_upp = 3.;
 b = BigFloat("0.5");
 R3 = Ribbon(a_low, a_upp, b)', 
-size="71%")
+size="65%")
 ```
 
 ```{r plot_newribbon_01, echo=FALSE,  cache=FALSE,  fig.height=4.3}
@@ -555,14 +555,16 @@ D31["b"] <- D32["b"] <- 0.5
       points(c(0,0), c(D31["a"], D32["a"]), col="red", pch=19, cex=2, xpd=TRUE)
 ```
 
+We firstly calculate the intersection with the lower line, and the with the upper line
+
 *** {name: right, width: "50%"}
 
 For each edge ($1$, $2$, $3$, $4$) of the current particle, here are the number of 
-vertices above the lower new line:
+vertices above the new lower line:
 
   
 ```{r julia_test12, results='asis', echo=FALSE}
-codechunk("D = Dlow(R3)
+codechunk("D = Dlow(R3) # the lower line of R3
 test1 = vec(poly[2,:]) .> D.a .+ D.b .* vec(poly[1,:])
 test2 = test1[[2:size(opoly)[2]; 1]]
 test = test1 + test2", size="68%")
@@ -589,7 +591,39 @@ Given these results:
 ```{r julia_test12_out_copy, ref.label='julia_test12_out', results='asis', echo=FALSE}
 ```
 
-```{r plot_newribbon_01_copy, ref.label='plot_newribbon_01', echo=FALSE, cache=FALSE, fig.height=4.3}
+```{r plot_newribbon_01_copy, echo=FALSE, cache=FALSE, fig.height=4.3}
+D31["b"] <- D32["b"] <- 0.5
+      D31["b"] <- D32["b"] <- 0.5 
+      part2 <- findVert(part, D31)
+      parttemp <- rbind(part,D31)
+      parttemp[, "include"] <- 1
+      par(bg = "white")
+      xlim <- c(0,2)
+      ylim <- c(0,6.5)
+      #
+      par(mar=c(3,3,1,1))
+      plotpart2(parttemp, xlim=xlim, ylim=ylim, lines=TRUE, edges=FALSE, vertices=FALSE,  col.line=rep(c("blue","green", "red"),each=2), 
+                main=NA)
+      D1 <- part[1,]
+      D2 <- part[2,]
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("blue",0.4), border=NA)
+      text(x=mean(D1[c("x1","x2")]), y= mean(D1[c("y1","y2")]), 
+           labels="1", pos=1, cex=1)
+      text(x=mean(D2[c("x1","x2")]), y= mean(D2[c("y1","y2")]), 
+           labels="3", pos=3, cex=1)
+      D1 <- part[3,]
+      D2 <- part[4,]
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], D2["a"], D2["a"]+D2["b"]*xlim[2], D1["a"]+D1["b"]*xlim[2]), col=alpha("green",0.4), border=NA)
+      text(x=mean(D1[c("x1","x2")]), y= mean(D1[c("y1","y2")]), 
+           labels="4", pos=1, cex=1)
+      text(x=mean(D2[c("x1","x2")]), y= mean(D2[c("y1","y2")]), 
+           labels="2", pos=3, cex=1)
+      D1 <- D31
+      polygon(x=c(0,0,xlim[2],xlim[2]), y=c(D1["a"], 6.1, 6.1, D1["a"]+D1["b"]*xlim[2]), col=alpha("red",0.4), border=NA)
+      plotpart2(part2, lines=FALSE, add=TRUE, col.edge="black")
+      points(c(0,0), c(D11["a"], D12["a"]), col="blue", pch=19, cex=2, xpd=TRUE)
+      points(c(0,0), c(D21["a"], D22["a"]), col="green", pch=19, cex=2, xpd=TRUE)
+      points(c(0), c(D31["a"]), col="red", pch=19, cex=2, xpd=TRUE)
 ```
 
 
@@ -690,6 +724,7 @@ end', size="64%")
 
 ```{r julia_updatePoly1, results='asis', echo=FALSE}
 codechunk('function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+        opoly = deepcopy(opoly) # see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
         # first edge
         index = if toRemove==1 size(opoly)[2] else toRemove-1 end
         M = intersect((D.a,D.b), getLine(opoly,index))

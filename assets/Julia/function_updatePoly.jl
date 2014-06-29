@@ -1,5 +1,6 @@
 # case one edge to remove
 function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+		opoly = deepcopy(opoly) ## see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
         # first edge
         index = if toRemove==1 size(opoly)[2] else toRemove-1 end
         M = intersect((D.a,D.b), getLine(opoly,index))
@@ -36,9 +37,9 @@ function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1},
 end
 
 # general case
-function updatePoly(poly::Array{BigFloat,2}, D::Line) 
+function updatePoly(opoly::Array{BigFloat,2}, D::Line) 
 
-        opoly = deepcopy(poly) # otherwise the function replaces the value !?
+        #opoly = deepcopy(poly) # otherwise the function replaces the value !?
             test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
             test2 = test1[[2:size(opoly)[2]; 1]]
             test = test1 + test2

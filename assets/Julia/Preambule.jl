@@ -9,7 +9,7 @@ for file = ("Line",)
 end
 
 # include functions
-for file = ("DlowDupp", "intersect", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
+for file = ("DlowDupp", "intersect", "ipart", "findRange", "getLine", "orderPart", "plotPart", "updatePoly")
     include(*(pwd(), "/function_", file, ".jl"))
 end
 

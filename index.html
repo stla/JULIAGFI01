@@ -307,42 +307,49 @@ end
 particle for illustration.</p>
 
 <div class='leftcol' style='width:49%;'>
-  <pre><code class="r" style="font-size:68%"># extract lower line from ribbon
+  <pre><code class="r" style="font-size:61%"># extract lower/upper line from ribbon
 function Dlow(ribbon::Ribbon)
         Line(ribbon.aLow, ribbon.b, false)
 end
-# extract upper line from ribbon
 function Dupp(ribbon::Ribbon)
         Line(ribbon.aUpp, ribbon.b, true)
 end
 </code></pre>
 
-<pre><code class="r" style="font-size:68%"># returns the intersection of two lines given by (intercept, slope)
+<pre><code class="r" style="font-size:61%"># returns the intersection of two lines given by (intercept, slope)
 function intersect(D1, D2)
         x = (D1[1]-D2[1])/(D2[2]-D1[2])
         return [x, D1[1] + D1[2]*x]
 end
+</code></pre><pre><code class="r" style="font-size:61%"># returns the polyhedron intersection of two ribbons
+function ipart(R1::Ribbon, R2::Ribbon)
+    D11 = Dlow(R1); D12 = Dupp(R1); D21 = Dlow(R2); D22 = Dupp(R2)
+    A = intersect((D11.a, D11.b), (D21.a, D21.b));
+    B = intersect((D11.a, D11.b), (D22.a, D22.b));
+    C = intersect((D12.a, D12.b), (D21.a, D21.b));
+    D = intersect((D12.a, D12.b), (D22.a, D22.b));
+    return orderPart(hcat(A,B,C,D))
+end
+
 </code></pre>
 
 </div>
 <div class='rightcol' style='width:51%;'>
-  <pre><code class="r" style="font-size:68%"># first ribbon: 
+  <p><em>Example:</em></p>
+
+<pre><code class="r" style="font-size:68%"># first ribbon: 
 R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
-D1_low = Dlow(R1);
-D1_upp = Dupp(R1);
 # second ribbon:
 R2 = Ribbon(4.5, 5.9, BigFloat("-2"));
-D2_low = Dlow(R2);
-D2_upp = Dupp(R2);
+# find the intersection polyhedron:
+poly0 = poly = ipart(R1, R2)
+</code></pre>
 
-# find the intersections:
-A = intersect((D1_low.a, D1_low.b), (D2_low.a, D2_low.b));
-B = intersect((D1_low.a, D1_low.b), (D2_upp.a, D2_upp.b));
-C = intersect((D1_upp.a, D1_upp.b), (D2_low.a, D2_low.b));
-D = intersect((D1_upp.a, D1_upp.b), (D2_upp.a, D2_upp.b));
+<pre><code class="r" style="font-size:68%">julia> float64(poly)
+2x4 Array{Float64,2}:
+ 1.17143  1.57143  1.25714  0.857143
+ 2.15714  2.75714  3.38571  2.78571 
 
-# particle:
-poly = orderPart(hcat(A,B,C,D))
 </code></pre>
 
 </div>
@@ -478,7 +485,7 @@ is sampled.</p>
   <article data-timings="">
     
 <div class='leftcol' style='width:50%;'>
-  <pre><code class="r" style="font-size:71%"># new ribbon
+  <pre><code class="r" style="font-size:65%"># new ribbon
 a_low = 2.;
 a_upp = 3.;
 b = BigFloat("0.5");
@@ -487,12 +494,14 @@ R3 = Ribbon(a_low, a_upp, b)
 
 <p><img src="assets/fig/JuliaGFI01-plot_newribbon_01.png" alt="plot of chunk plot_newribbon_01"> </p>
 
+<p>We firstly calculate the intersection with the lower line, and the with the upper line</p>
+
 </div>
 <div class='rightcol' style='width:50%;'>
   <p>For each edge ($1$, $2$, $3$, $4$) of the current particle, here are the number of 
-vertices above the lower new line:</p>
+vertices above the new lower line:</p>
 
-<pre><code class="r" style="font-size:68%">D = Dlow(R3)
+<pre><code class="r" style="font-size:68%">D = Dlow(R3) # the lower line of R3
 test1 = vec(poly[2,:]) .> D.a .+ D.b .* vec(poly[1,:])
 test2 = test1[[2:size(opoly)[2]; 1]]
 test = test1 + test2
@@ -639,6 +648,7 @@ end
   <p><em>Intersection in case of two points (one edge) outside:</em></p>
 
 <pre><code class="r" style="font-size:64%">function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+        opoly = deepcopy(opoly) # see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
         # first edge
         index = if toRemove==1 size(opoly)[2] else toRemove-1 end
         M = intersect((D.a,D.b), getLine(opoly,index))

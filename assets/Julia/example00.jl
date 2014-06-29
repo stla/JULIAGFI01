@@ -16,21 +16,30 @@ end
 
 # first ribbon: (ne pas lancer le comment en 1ère ligne)
 R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
-D1_low = Dlow(R1);
-D1_upp = Dupp(R1);
 # second ribbon:
 R2 = Ribbon(4.5, 5.9, BigFloat("-2"));
-D2_low = Dlow(R2);
-D2_upp = Dupp(R2);
 
-# find the intersections:
-A = intersect((D1_low.a, D1_low.b), (D2_low.a, D2_low.b));
-B = intersect((D1_low.a, D1_low.b), (D2_upp.a, D2_upp.b));
-C = intersect((D1_upp.a, D1_upp.b), (D2_low.a, D2_low.b));
-D = intersect((D1_upp.a, D1_upp.b), (D2_upp.a, D2_upp.b));
+# find the intersection polyhedron:
+poly0 = poly = ipart(R1, R2)
 
-# particle:
-poly0 = poly = orderPart(hcat(A,B,C,D))
+ftest = function(x) 
+	x[2] = 0 
+	return x
+end
+y = [1,2]
+ftest(y)
+y
+
+ftest = function(x) 
+	x = deepcopy(x)
+	x[2] = 0 
+	return x
+end
+
+ftest2 = function(x) 
+	x = x[[2,1]] 
+	return x
+end
 
 #######################
 ## plot the particle ##
