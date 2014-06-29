@@ -53,7 +53,7 @@ set.seed(666)
   - I'm not a Julia specialist; these slides should firstly help me to request some help 
 
   - [Ciszewski & Hannig's paper](http://www.unc.edu/~hannig/publications/CisewskiHannig2012.pdf) is not easy to read for non-mathematicians, and 
-  the algorithm may appear complicated to us
+  the algorithm may appear complicated to them
   
   - Because I like the [slidify package](http://slidify.org/)
 
@@ -555,7 +555,7 @@ D31["b"] <- D32["b"] <- 0.5
       points(c(0,0), c(D31["a"], D32["a"]), col="red", pch=19, cex=2, xpd=TRUE)
 ```
 
-We firstly calculate the intersection with the lower line, and the with the upper line
+We firstly calculate the intersection with the lower line, and then with the upper line
 
 *** {name: right, width: "50%"}
 
