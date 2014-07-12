@@ -1,6 +1,6 @@
 # case one edge to remove
-function updatePoly1(opoly::Array{BigFloat,2}, D::Line, toRemove::Int)
-		opoly = deepcopy(opoly) ## see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
+function updatePoly1(oopoly::Array{BigFloat,2}, D::Line, toRemove::Int)
+		opoly = oopoly ## see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
         # first edge
         index = if toRemove==1 size(opoly)[2] else toRemove-1 end
         M = intersect((D.a,D.b), getLine(opoly,index))
@@ -21,7 +21,7 @@ function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1},
     if Dinters[2]-Dinters[1] != 1
             arrange = [ncol, [1:ncol-1]]
     else
-            arrange = [rem1(i+Dinters[1]-1,ncol)::Int for i=1:ncol] # mod([1:ncol]+Dinters[1]-2, ncol)+1 
+            arrange = [rem1(i+Dinters[1]-1,ncol)::Int for i=1:ncol] # mod([1:ncol]+Dinters[1]-2, ncol)+1
     end
     opoly = opoly[:, arrange]
     # intersections
@@ -37,7 +37,7 @@ function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1},
 end
 
 # general case
-function updatePoly(opoly::Array{BigFloat,2}, D::Line) 
+function updatePoly(opoly::Array{BigFloat,2}, D::Line)
 
         #opoly = deepcopy(poly) # otherwise the function replaces the value !?
             test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
@@ -63,8 +63,12 @@ function updatePoly(opoly::Array{BigFloat,2}, D::Line)
             else
                     if Remove[1] && last(Remove)
                         indices = find(!Remove)
+                        if length(indices)==0
+                            return "stop"
+                        end
                         torem =  size(indices)[1]+1
-                        indices = [indices, last(indices)+1]
+                        # last crash si indices est vide mais ça ne devrait pas arriver
+                        indices = [indices; last(indices)+1]
                     else
                         indices = [1:size(opoly)[2]]
                         indices = deleteat!(indices, toRemove[2]:last(toRemove))
