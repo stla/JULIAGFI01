@@ -4,6 +4,7 @@ function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
             slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
             return [ minimum(slopes) ; maximum(slopes) ]
         else # the y-axis cuts the particle
+        println("crossing")
             where = (isInside(poly, lower), isInside(poly, upper))
             if (where[1]=="inside" || where[2]=="inside") # one point is inside
                     return [-Inf, Inf]

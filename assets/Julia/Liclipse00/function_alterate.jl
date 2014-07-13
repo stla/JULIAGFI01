@@ -5,8 +5,8 @@ function alterate(ncopies, vt, Ztj, df)
   D = norm(Ztj.-C)
   tau = (Ztj.-C)./D
   Ctil =  1/sqrt(df+1).*randn(ncopies)
-  Dtil = sqrt(rand(Chi(df), ncopies))
-  Znew = zeros(length(Ztj), ncopies)
+  Dtil = rand(Chi(df), ncopies)
+  Znew = zeros(BigFloat, length(Ztj), ncopies)
   for i in 1:ncopies
     Znew[:,i] = Dtil[i].*tau .+ Ctil[i] # est-ce utile de calculer Znew ? - oui pour les altérations futures je pense
     vtnew = zeros(BigFloat, size(vt))
