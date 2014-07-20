@@ -4,29 +4,29 @@ using Distributions
 
 type Line
         a::Float64   # intercept
-        b::Float64  # slope
+        b::BigFloat  # slope
         typ::Bool    # type (true:upper, false:lower)
 end
 
 type Ribbon
         aLow::Float64
         aUpp::Float64
-        b::Float64
+        b::BigFloat
 end
 
 
 function alterate(ncopies, vt, Ztj, df)
-  VTnew = cell(ncopies) # could use an array instead
+  VTnew = Array(Array{BigFloat,2},ncopies) #cell(ncopies)
   vt = vt[[2;1],:]
   C = mean(Ztj)
   D = norm(Ztj.-C)
   tau = (Ztj.-C)./D
   Ctil =  1/sqrt(df+1).*randn(ncopies)
   Dtil = rand(Chi(df), ncopies)
-  Znew = zeros(Float64, length(Ztj), ncopies)
+  Znew = zeros(BigFloat, length(Ztj), ncopies)
   for i in 1:ncopies
     Znew[:,i] = Dtil[i].*tau .+ Ctil[i] # est-ce utile de calculer Znew ? - oui pour les altérations futures je pense
-    vtnew = zeros(Float64, size(vt))
+    vtnew = zeros(BigFloat, size(vt))
     for m in 1:size(vt,2)
       munew = vt[1,m] + vt[2,m]*(C-Ctil[i]*D/Dtil[i])
       sigmanew = vt[2,m]*D/Dtil[i]
@@ -48,7 +48,7 @@ end
 
 
 # find the range - crash if sigma=0
-function findRange(poly::Array{Float64,2}, lower::Float64, upper::Float64)
+function findRange(poly::Array{BigFloat,2}, lower::Float64, upper::Float64)
         if ( (minimum(poly[1,:]) > 0) || (maximum(poly[1,:])<0) )
             slopes = [(poly[2,:]-lower)./poly[1,:] (poly[2,:]-upper)./poly[1,:]]
             return [ minimum(slopes) ; maximum(slopes) ]
@@ -87,7 +87,7 @@ function findRange(poly::Array{Float64,2}, lower::Float64, upper::Float64)
         end
 end
 
-function isInside(opoly::Array{Float64,2}, a::Float64)
+function isInside(opoly::Array{BigFloat,2}, a::Float64)
         x1 = vec(opoly[1,:])
         x2 = x1[[2:length(x1); 1]]
         # ceux qui coupent
@@ -109,7 +109,8 @@ end
 
 
 # converts an edge to (intercept, slope)
-function getLine(opoly::Array{Float64,2}, index::Int)
+# un peu bête car on pourrait savoir avant
+function getLine(opoly::Array{BigFloat,2}, index::Int)
         A = opoly[:,index]
         #B = opoly[:,mod(index,size(opoly,2))+1]
 		B = opoly[:,rem1(index+1,size(opoly,2))]
@@ -144,11 +145,14 @@ end
 
 
 # returns the intersection of two lines given by (intercept, slope)
-function intersect(D1, D2)
+function intersect(D1::(Float64,BigFloat), D2::(Float64,BigFloat))
         x = (D1[1]-D2[1])/(D2[2]-D1[2])
         return [x, D1[1] + D1[2]*x]
 end
-
+function intersect(D1::(Float64,BigFloat), D2::(BigFloat,BigFloat))
+        x = (D1[1]-D2[1])/(D2[2]-D1[2])
+        return [x, D1[1] + D1[2]*x]
+end
 
 
 # returns the polyhedron intersection of two ribbons
@@ -164,7 +168,7 @@ end
 
 
 # order poly
-function orderPart(poly::Array{Float64,2})
+function orderPart(poly::Array{BigFloat,2})
         # compute an interior point
         O = [ mean(poly[1,1:3]) , mean(poly[2,1:3]) ]
         # center the polyhedron around O
@@ -178,13 +182,13 @@ end
 
 
 # case one edge to remove
-function updatePoly1(oopoly::Array{Float64,2}, D::Line, toRemove::Int)
+function updatePoly1(oopoly::Array{BigFloat,2}, D::Line, toRemove::Int)
 		opoly = oopoly ## see https://groups.google.com/d/topic/julia-users/PfTZhZu6OMo/discussion
         # first edge
-        index = if toRemove==1 size(opoly)[2] else toRemove-1 end
+        index = if toRemove==1 size(opoly,2) else toRemove-1 end
         M = intersect((D.a,D.b), getLine(opoly,index))
         # second edge
-        index = if toRemove==size(opoly)[2] 1 else toRemove+1 end
+        index = if toRemove==size(opoly,2) 1 else toRemove+1 end
         N = intersect((D.a,D.b), getLine(opoly,index))
         #
         opoly[:,toRemove] = M
@@ -194,9 +198,9 @@ function updatePoly1(oopoly::Array{Float64,2}, D::Line, toRemove::Int)
 end
 
 # case "chanfrein"
-function updatePoly2(opoly::Array{Float64,2}, D::Line, Dinters::Array{Int64,1}, test1::BitArray{1})
+function updatePoly2(opoly::Array{BigFloat,2}, D::Line, Dinters::Array{Int64,1}, test1::BitArray{1})
     # shift to put the two edges at first positions
-    ncol = size(opoly)[2]
+    ncol = size(opoly,2)
     if Dinters[2]-Dinters[1] != 1
             arrange = [ncol, [1:ncol-1]]
     else
@@ -216,11 +220,11 @@ function updatePoly2(opoly::Array{Float64,2}, D::Line, Dinters::Array{Int64,1}, 
 end
 
 # general case
-function updatePoly(opoly::Array{Float64,2}, D::Line)
+function updatePoly(opoly::Array{BigFloat,2}, D::Line)
 
         #opoly = deepcopy(poly) # otherwise the function replaces the value !?
             test1 = vec(opoly[2,:]) .> D.a .+ D.b .* vec(opoly[1,:])
-            test2 = test1[[2:size(opoly)[2]; 1]]
+            test2 = test1[[2:size(opoly,2); 1]]
             test = test1 + test2
             if(D.typ==false)
                 Remove = test .== 0
@@ -245,11 +249,11 @@ function updatePoly(opoly::Array{Float64,2}, D::Line)
                         if length(indices)==0
                             return "stop"
                         end
-                        torem =  size(indices)[1]+1
+                        torem =  size(indices,1)+1
                         # last crash si indices est vide mais ça ne devrait pas arriver
                         indices = [indices; last(indices)+1]
                     else
-                        indices = [1:size(opoly)[2]]
+                        indices = [1:size(opoly,2)]
                         indices = deleteat!(indices, toRemove[2]:last(toRemove))
                         torem = toRemove[1]
                     end
@@ -262,46 +266,45 @@ end
 
 function fid_basic(ylow, yupp, N, R)
     n = size(ylow,1)
-    X = FE = ones(n)
+    FE = ones(n)
     V = eye(n)
-    L = ylow
-    U = yupp
+    #L = ylow
+    #U = yupp
     Dim = 2
 
     # initial sample
-    Z = zeros(Float64,n,N)
+    Z = zeros(BigFloat,n,N)
     Z[:,:] = randn(n,N)
     A = V*Z
     C1 = K_start = [1;2]
     Z[deleteat!([1:size(Z,1)], C1),:] = 0
-    VTall = cell(N)
+    VTall = Array(Array{BigFloat,2},N) #cell(N)
     for j in 1:N
-        R1 = Ribbon(L[K_start[1]], U[K_start[1]], -A[K_start[1],j])
-        R2 = Ribbon(L[K_start[2]], U[K_start[2]], -A[K_start[2],j])
+        R1 = Ribbon(ylow[K_start[1]], yupp[K_start[1]], BigFloat(-A[K_start[1],j]))
+        R2 = Ribbon(ylow[K_start[2]], yupp[K_start[2]], BigFloat(-A[K_start[2],j]))
         VTall[j] = ipart(R1,R2)
     end
 
     #### sampling k=3, ..., n -----------------------
-    weight  = zeros(Float64,n,N)
-    WT =  zeros(Float64,N) # si défini dans le for alors pas en sortie du for
-    ESS = zeros(Float64,n)
+    weight  = zeros(BigFloat,n,N)
+    WT =  zeros(BigFloat,N) # si défini dans le for alors pas en sortie du for
+    ESS = zeros(BigFloat,n)
     for k in 3:n
         Z1 = FE[k,:]
-        VTall_new = cell(N)
-        UU = rand(N)
+        VTall_new = Array(Array{BigFloat,2},N) #cell(N)
         for j in 1:N
             VTj = VTjcopy = VTall[j]
             VTjcopy[2,:] = Z1*VTj[2,:]
                 #println(j)
-            mM = findRange(VTjcopy, L[k], U[k])
+            mM = findRange(VTjcopy, ylow[k], yupp[k])
             y = atan(mM[2])
             x = atan(mM[1])
-            u = x+(y-x)*UU[j]  #runif(1, x, y)
+            u = x+(y-x)*rand()  #runif(1, x, y)
             ZZ = tan(u)
             wt = weight[k,j] = (-ZZ^2/2)+log(1+ZZ^2)+log(y-x)
             # new polygon
-            D31 = Line(L[k], ZZ, false)
-            D32 = Line(U[k], ZZ, true)
+            D31 = Line(ylow[k], ZZ, false)
+            D32 = Line(yupp[k], ZZ, true)
             VTj_update = updatePoly(VTj, D31)
             VTj_update = VTall_new[j] = updatePoly(VTj_update, D32)
             Z[k,j] = -ZZ
@@ -318,7 +321,7 @@ function fid_basic(ylow, yupp, N, R)
 
         ### alteration --------------------------------------
         if ESS[k] < R*N && k<n
-        println("alteration")
+        #println("alteration")
             N_sons=zeros(Int,N)
             # generate the cumulative distribution
             dist = cumsum(WT)
@@ -332,8 +335,8 @@ function fid_basic(ylow, yupp, N, R)
                 N_sons[j]=N_sons[j]+1
             end
             Zt = Z[1:k,:]
-            Znew = zeros(Float64, k, N)
-            VTnew = cell(N)
+            Znew = zeros(BigFloat, k, N)
+            VTnew = Array(Array{BigFloat,2},N) #cell(N)
             start = 0
             for j in find(N_sons.!=0)
               ncopies = N_sons[j]
@@ -349,7 +352,7 @@ function fid_basic(ylow, yupp, N, R)
             end
             VTall = VTnew
             Z[1:k,:] = Znew
-            weight  = zeros(Float64,n,N)
+            weight  = zeros(BigFloat,n,N)
         end # END ALTERATION
 
     end # END for k in 3:n
@@ -384,7 +387,6 @@ function fid_basic(ylow, yupp, N, R)
     end
 
     #----------------------------------------------------pick coordinates
-    Dim = 2
     VT_end = zeros(Float64, Dim, N)
     for i in 1:N
         #for(j in 1:Dim){
